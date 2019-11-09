@@ -1,0 +1,37 @@
+---
+#begin: update and redeploy nodejs.ssr on ecs @kevinzhang 20190509
+- hosts: mylab
+  vars:
+       app_dir: "/opt/nodejssr"
+       new_app: "myregist.xxx.tech:5001/prod/newstyle-exchange-nodejs-ssr:latest"
+       bak_app: "myregist.xxx.tech:5001/prod/newstyle-exchange-nodejs-ssr:bak"
+
+  tasks:
+
+  - name:  "before tag bak img ,rm it first"
+    command:  docker rmi "{{ bak_app }}" -f
+
+  - name:  "tag to rename and backup fomrer run ok img"
+    command:  docker tag "{{ new_app }}" "{{ bak_app }}"
+
+  - name: "pull download newest image"
+    command: docker pull "{{ new_app }}"
+
+  - name: "stop the runc"
+    command: docker-compose stop
+    args:
+      chdir: "{{ app_dir }}"
+
+  - name: "remove the runc"
+    command: docker-compose rm -fsv
+    args:
+      chdir: "{{ app_dir }}"
+
+  - name: "final build from newest image and startup"
+    command: docker-compose up -d
+    args:
+      chdir: "{{ app_dir }}"
+
+#end
+...
+

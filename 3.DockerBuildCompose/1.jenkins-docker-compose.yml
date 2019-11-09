@@ -1,0 +1,17 @@
+---
+version: '3'
+ 
+services:
+###
+  myjkslts:
+    image: jenkins/jenkins:lts-alpine
+    container_name: myjkslts
+    network_mode: bridge
+    ports:
+     - 6888:8080
+    restart: always
+    volumes:
+     - /opt/Data4Docker/jksdata:/var/jenkins_home:rw
+###end
+...
+

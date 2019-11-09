@@ -1,0 +1,20 @@
+---
+version: '3'
+ 
+services:
+###
+  wasuzentao:
+    image: bbczzz/zentao11:191107
+    container_name: wasuzentao
+    network_mode: bridge
+    ports:
+     - 8443:443
+    restart: always
+    volumes:
+     - /opt/Data4Docker/zentaodata/mysqldata:/var/lib/mysql:rw
+     - /opt/Data4Docker/zentaodata/appwww:/app/zentaopms:rw
+    environment:
+      MYSQL_ROOT_PASSWORD: yourRandPass$
+###end
+...
+

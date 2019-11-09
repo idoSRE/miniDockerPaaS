@@ -1,0 +1,81 @@
+install
+keyboard us
+rootpw --iscrypted $1$LgRT8/hx$89/bj7joqW.8JxKY1161o1
+url --url=http://172.19.19.99/cblr/links/CentOS7.6.mini-x86_64
+lang en_US
+auth  --useshadow  --passalgo=sha512
+graphical
+firstboot --disable
+skipx
+selinux --disabled
+firewall --enabled --port=12201:tcp
+network  --bootproto=dhcp --device=eth0 --onboot=on --hostname=Sample-ALI-HZ-XX-EXG-09
+reboot
+timezone Asia/Shanghai --isUtc
+zerombr
+clearpart --all --initlabel
+# part /boot --fstype ext3 --size 1024 --ondisk sda
+# part swap --size 4096 --ondisk sda
+# part / --fstype xfs --size=40000  --ondisk sda
+# part /data --fstype xfs --size 1 --grow --ondisk sda
+part /boot --asprimary --fstype="ext3" --size=512 --ondisk sda
+part pv.sda --size=1 --grow --ondisk sda
+volgroup vg00_sda pv.sda
+part swap --fstype="swap"  --recommended
+logvol / --fstype xfs --name=lv_root --vgname=vg00_sda --size=40000 
+logvol /data --fstype xfs --name=lv_data --vgname=vg00_sda --size=1 --grow
+# part pv.sdb --size=1 --grow --ondisk sdb
+# volgroup vg01_sdb pv.sdb
+# logvol /storage --fstype xfs --name=lv_storage --vgname=vg01_sdb --size=1 --grow
+
+
+%packages
+@^minimal
+@core
+%end
+
+%post
+rpm -Uvh http://172.19.19.99/cobbler/misc/wasu/addon/wget-1.14-18.el7.x86_64.rpm
+rpm -Uvh http://172.19.19.99/cobbler/misc/wasu/addon/bash-completion-2.1-6.el7.noarch.rpm
+rpm -Uvh http://172.19.19.99/cobbler/misc/wasu/addon/psmisc-22.20-15.el7.x86_64.rpm
+sed -i 's/#Port 22/Port 12201/g' /etc/ssh/sshd_config
+chattr +i /etc/hosts.allow /etc/hosts.deny
+
+cd /etc/yum.repos.d/
+mkdir ./old && mv ./*.repo ./old
+wget -c http://172.19.19.99/cblr/misc/wasu/repo/CentOS7-ALI.repo
+wget -c http://172.19.19.99/cblr/misc/wasu/repo/docker-ce.repo.disable
+wget -c http://172.19.19.99/cblr/misc/wasu/repo/epel7-ALI.repo.disable
+#dl myAddon for post diy install
+cd /root 
+wget -c http://172.19.19.99/cblr/misc/wasu/addon/myAddon.tar.gz
+
+# set limit to high for every local one
+cd /etc/security/
+cp limits.conf limits.conf.bak
+curl  http://172.19.19.99/cblr/misc/wasu/ostune/add-to-limit.conf >>limits.conf
+
+# set kernel opt env
+cd /etc/
+cp sysctl.conf sysctl.conf.def
+cat >> ./sysctl.conf  << "SETKER"
+net.ipv4.ip_forward = 0
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.default.accept_source_route = 0
+kernel.sysrq = 0
+kernel.core_uses_pid = 1
+net.ipv4.tcp_syncookies = 1
+kernel.msgmnb = 65536
+kernel.msgmax = 65536
+kernel.shmmax = 68719476736
+kernel.shmall = 4294967296
+net.ipv4.tcp_timestamps = 0
+net.ipv4.tcp_synack_retries = 1
+net.ipv4.tcp_syn_retries = 1
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_keepalive_time = 30
+net.ipv4.ip_local_port_range = 1024 65000
+fs.file-max=10240000
+fs.nr_open=10240000
+%end

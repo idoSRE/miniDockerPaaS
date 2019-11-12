@@ -1,0 +1,27 @@
+---
+### zzz@ 20190903 22:00 tune gitlab one docker AllInOne
+version: '3'
+
+services:
+
+ gitlab:
+  image: 'gitlab/gitlab-ce:12.2.5-ce.0'
+  restart: always
+  hostname: 'opsgit.yourdomain.com'
+  container_name: gitlab
+  environment:
+    GITLAB_OMNIBUS_CONFIG: |
+      external_url 'https://opsgit.yourdomain.com'
+      gitlab_rails['gitlab_shell_ssh_port'] = 2222
+  network_mode: bridge
+  ports:
+    - '9443:443'
+    - '2222:22'
+  volumes:
+    - /opt/Data4Docker/gitlabdata/config:/etc/gitlab:rw
+    - /opt/Data4Docker/gitlabdata/logs:/var/log/gitlab:rw
+    - /opt/Data4Docker/gitlabdata/data:/var/opt/gitlab:rw
+    - /opt/Data4Docker/gitlabdata/yourdomain.key:/etc/gitlab/ssl/opsgit.yourdomain.com.key:ro
+    - /opt/Data4Docker/gitlabdata/yourdomain.crt:/etc/gitlab/ssl/opsgit.yourdomain.com:ro
+#
+...

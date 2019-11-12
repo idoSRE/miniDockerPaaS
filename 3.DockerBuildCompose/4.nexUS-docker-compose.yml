@@ -1,0 +1,18 @@
+---
+version: '3'
+ 
+services:
+###
+  nexus:
+    image: sonatype/nexus3:3.18.1
+    container_name: nexus
+    network_mode: bridge
+    ports:
+    # def only https export
+     - 9999:8081
+    restart: always
+    volumes:
+     - /opt/Data4Docker/nexusdata:/nexus-data:rw
+###end
+...
+

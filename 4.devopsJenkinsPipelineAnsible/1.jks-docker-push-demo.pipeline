@@ -1,0 +1,25 @@
+pipeline { 
+    agent any;
+
+    environment{
+        MYZJULAB_TEST_REGISTRY_ACCOUNT = credentials("MYZJULAB_TEST_REGISTRY_ACCOUNT")
+        MYZJULAB_PRODUCT_REGISTRY_ACCOUNT = credentials("MYZJULAB-PRODUCT-REGIST-ACCOUNT")
+    }
+    stages {
+        stage('Image Pull from Test Env') {
+            steps {
+                sh 'docker login --username=${MYZJULAB_TEST_REGISTRY_ACCOUNT_USR} --password=${MYZJULAB_TEST_REGISTRY_ACCOUNT_PSW} --email=hello registry.cn-hangzhou.myzjulab.com'
+                sh 'docker pull registry.cn-hangzhou.myzjulab.com/wasu-test-uepg/uepg-ds:${version}'
+                sh 'docker tag registry.cn-hangzhou.myzjulab.com/wasu-test-uepg/uepg-ds:${version} registry.cn-hangzhou.myzjulab.com/wcms2_uepg/uepg-ds:${version}'
+                sh 'docker rmi -f registry.cn-hangzhou.myzjulab.com/wasu-test-uepg/uepg-ds:${version}'
+            }
+        }
+        stage('Image Push into Product Env') {
+            steps {
+                sh 'docker login --username=${MYZJULAB_PRODUCT_REGISTRY_ACCOUNT_USR} --password=${MYZJULAB_PRODUCT_REGISTRY_ACCOUNT_PSW} --email=hello registry.cn-hangzhou.myzjulab.com'
+                sh "docker push registry.cn-hangzhou.myzjulab.com/wcms2_uepg/uepg-ds:${version}"
+                sh 'docker rmi -f registry.cn-hangzhou.myzjulab.com/wcms2_uepg/uepg-ds:${version}'
+            }
+        }
+    }
+}
